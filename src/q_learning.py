@@ -5,6 +5,7 @@ import time
 def q_learning(env, Q, num_episodes, alpha, gamma, epsilon, epsilon_decay, min_epsilon, demo_interval=500):
     rewards = []
     steps = []
+
     for episode in range(1, num_episodes + 1):
         state, _ = env.reset()
         done = False
@@ -27,7 +28,7 @@ def q_learning(env, Q, num_episodes, alpha, gamma, epsilon, epsilon_decay, min_e
             if next_state_key not in Q:
                 Q[next_state_key] = np.zeros(env.action_space.n)
 
-            # Update the Q-value for the state-action pair
+            # Q-learning update
             Q[state_key][action] = Q[state_key][action] + alpha * (
                         reward + gamma * np.max(Q[next_state_key]) - Q[state_key][action])
 
@@ -40,7 +41,7 @@ def q_learning(env, Q, num_episodes, alpha, gamma, epsilon, epsilon_decay, min_e
         # Decay epsilon
         epsilon = max(min_epsilon, epsilon * epsilon_decay)
 
-        # Every demo_interval episodes, run a demonstration episode
+        # Every demo_interval episodes, run a demonstration
         if episode % demo_interval == 0:
             print(f"--- Demonstration at Episode {episode} ---")
             demo(env, Q, episode)
@@ -53,7 +54,7 @@ def demo(env, Q, episode):
     Run a demonstration episode with rendering.
     The current episode number is displayed in the top right of the window.
     """
-    # Update the episode counter in the environment
+    # Update the episode counter (this shows the episode number in the window)
     if hasattr(env, 'update_episode_counter'):
         env.update_episode_counter(episode)
 
@@ -61,7 +62,7 @@ def demo(env, Q, episode):
     done = False
     while not done:
         env.render()  # Render the environment (with the episode counter)
-        time.sleep(0.1)  # Slow down the rendering for observation
+        time.sleep(0.1)  # Slow down rendering so you can observe the agent
         state_key = tuple(state)
         if state_key not in Q:
             action = env.action_space.sample()
