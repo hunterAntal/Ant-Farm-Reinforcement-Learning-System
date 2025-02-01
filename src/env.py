@@ -1,73 +1,73 @@
-# env.py
-
+import pyglet
+import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
-import numpy as np
-import pygame
-
 
 class AntFarmEnv(gym.Env):
-    """
-    A grid-world environment where an agent ("ant") tries to reach a fixed goal.
-    The grid is of size grid_size x grid_size.
-
-    - **Observation**: An array of 4 integers: [agent_x, agent_y, goal_x, goal_y]
-    - **Action Space**: Discrete(4)
-        - 0: move up    (decrease y)
-        - 1: move down  (increase y)
-        - 2: move left  (decrease x)
-        - 3: move right (increase x)
-    - **Reward**: Shaped reward based on Manhattan distance:
-         reward = 10 - new_distance, with a bonus if the agent reaches the goal.
-
-    The goal position remains fixed throughout all episodes and simulation runs.
-    """
-
-    metadata = {'render.modes': ['human']}
-
     def __init__(self, grid_size=10, max_steps=100, fixed_goal=None):
         super(AntFarmEnv, self).__init__()
         self.grid_size = grid_size
         self.max_steps = max_steps
 
-        # Define action and observation spaces.
-        self.action_space = spaces.Discrete(4)
+        self.action_space = spaces.Discrete(4)  # 4 actions (Up, Down, Left, Right)
         self.observation_space = spaces.Box(low=0, high=grid_size - 1, shape=(4,), dtype=np.int32)
 
-        # Rendering parameters.
         self.cell_size = 40
         self.window_size = self.grid_size * self.cell_size
-        self.screen = None
-        self.clock = None
 
-        # Set the fixed goal.
-        if fixed_goal is None:
-            self.fixed_goal = np.array([np.random.randint(grid_size), np.random.randint(grid_size)])
-        else:
-            self.fixed_goal = np.array(fixed_goal)
+        # Goal Position
+        self.fixed_goal = np.array(fixed_goal if fixed_goal else [1, 1])
 
-        # Initialize the environment state.
+        # Initialize the environment state
         self.reset()
 
+        # Pyglet Window Setup
+        self.window = pyglet.window.Window(self.window_size, self.window_size, "Ant Farm")
+        self.batch = pyglet.graphics.Batch()
+
+        # Load Shapes
+        self.goal_shape = pyglet.shapes.Rectangle(
+            self.goal_pos[0] * self.cell_size,
+            self.goal_pos[1] * self.cell_size,
+            self.cell_size, self.cell_size, color=(255, 0, 0), batch=self.batch)
+
+        self.agent_shape = pyglet.shapes.Circle(
+            self.agent_pos[0] * self.cell_size + self.cell_size // 2,
+            self.agent_pos[1] * self.cell_size + self.cell_size // 2,
+            self.cell_size // 3, color=(0, 0, 255), batch=self.batch)
+
+        # Grid Lines
+        self.grid_lines = []
+        for x in range(0, self.window_size, self.cell_size):
+            self.grid_lines.append(pyglet.shapes.Line(x, 0, x, self.window_size, color=(200, 200, 200), batch=self.batch))
+        for y in range(0, self.window_size, self.cell_size):
+            self.grid_lines.append(pyglet.shapes.Line(0, y, self.window_size, y, color=(200, 200, 200), batch=self.batch))
+
+        # Episode Counter Label (top right of the window)
+        self.episode_label = pyglet.text.Label(
+            "Episode: 0",
+            font_name='Arial',
+            font_size=14,
+            x=self.window_size - 10,
+            y=self.window_size - 10,
+            anchor_x='right',
+            anchor_y='top',
+            color=(255, 255, 255, 255)
+        )
+
     def reset(self, seed=None, options=None):
-        # Randomize the agent's starting position.
+        # Randomly place the agent; avoid starting on the goal
         self.agent_pos = np.array([np.random.randint(self.grid_size), np.random.randint(self.grid_size)])
-        # Ensure the agent doesn't start on the fixed goal.
         while np.array_equal(self.agent_pos, self.fixed_goal):
             self.agent_pos = np.array([np.random.randint(self.grid_size), np.random.randint(self.grid_size)])
-        # Use the fixed goal for every episode.
-        self.goal_pos = self.fixed_goal.copy()
 
+        self.goal_pos = self.fixed_goal.copy()
         self.steps = 0
-        self.prev_distance = self._manhattan_distance(self.agent_pos, self.goal_pos)
-        obs = np.array([self.agent_pos[0], self.agent_pos[1],
-                        self.goal_pos[0], self.goal_pos[1]], dtype=np.int32)
-        return obs, {}
+        return np.array([*self.agent_pos, *self.goal_pos], dtype=np.int32), {}
 
     def step(self, action):
         self.steps += 1
 
-        # Move agent based on action
         if action == 0:  # Up
             self.agent_pos[1] = max(self.agent_pos[1] - 1, 0)
         elif action == 1:  # Down
@@ -80,55 +80,29 @@ class AntFarmEnv(gym.Env):
         new_distance = self._manhattan_distance(self.agent_pos, self.goal_pos)
         reward = 10 - new_distance
 
-        # Check if the goal is reached
         if new_distance == 0:
-            reward += 50  # Bonus for reaching the goal
-            return self.reset()[0], reward, True, False, {}  # Immediately reset
+            reward += 50  # Bonus for reaching goal
+            return self.reset()[0], reward, True, False, {}
 
-        # End episode if max steps are reached
         done = self.steps >= self.max_steps
-        obs = np.array([self.agent_pos[0], self.agent_pos[1], self.goal_pos[0], self.goal_pos[1]], dtype=np.int32)
-        return obs, reward, done, False, {}
+        return np.array([*self.agent_pos, *self.goal_pos], dtype=np.int32), reward, done, False, {}
 
     def _manhattan_distance(self, pos1, pos2):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
-    def render(self, mode='human', episode=0):
-        if episode % 500 != 0:
-            return  # Skip rendering except for every 500th episode
-        if self.screen is None:
-            pygame.init()
-            self.screen = pygame.display.set_mode((self.window_size, self.window_size))
-            pygame.display.set_caption("Ant Farm Environment")
-            self.clock = pygame.time.Clock()
+    def update_episode_counter(self, episode):
+        """Update the text of the episode counter."""
+        self.episode_label.text = f"Episode: {episode}"
 
-        self.screen.fill((255, 255, 255))
-
-        # Draw grid lines
-        for x in range(0, self.window_size, self.cell_size):
-            pygame.draw.line(self.screen, (200, 200, 200), (x, 0), (x, self.window_size))
-        for y in range(0, self.window_size, self.cell_size):
-            pygame.draw.line(self.screen, (200, 200, 200), (0, y), (self.window_size, y))
-
-        # Draw the goal as a red square
-        goal_rect = pygame.Rect(self.goal_pos[0] * self.cell_size, self.goal_pos[1] * self.cell_size, self.cell_size,
-                                self.cell_size)
-        pygame.draw.rect(self.screen, (255, 0, 0), goal_rect)
-
-        # Draw the agent as a blue circle
-        agent_center = (self.agent_pos[0] * self.cell_size + self.cell_size // 2,
-                        self.agent_pos[1] * self.cell_size + self.cell_size // 2)
-        pygame.draw.circle(self.screen, (0, 0, 255), agent_center, self.cell_size // 3)
-
-        # Render Episode Counter
-        font = pygame.font.Font(None, 36)  # Use default font, size 36
-        episode_text = font.render(f"Episode: {episode}", True, (0, 0, 0))  # Black text
-        self.screen.blit(episode_text, (10, 10))  # Position at top-left corner
-
-        pygame.display.flip()
-        self.clock.tick(10)
+    def render(self):
+        # Process window events, clear, update positions, and flip the buffer
+        self.window.dispatch_events()
+        self.window.clear()
+        self.agent_shape.x = self.agent_pos[0] * self.cell_size + self.cell_size // 2
+        self.agent_shape.y = self.agent_pos[1] * self.cell_size + self.cell_size // 2
+        self.batch.draw()
+        self.episode_label.draw()  # Draw the episode counter label
+        self.window.flip()
 
     def close(self):
-        if self.screen is not None:
-            pygame.quit()
-            self.screen = None
+        self.window.close()

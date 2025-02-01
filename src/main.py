@@ -1,21 +1,17 @@
-# main.py
-
-import os
 import numpy as np
-import pygame
 from env import AntFarmEnv
 from q_learning import q_learning
 from utils import save_q_table, load_q_table, plot_training_results
 import config
 
 def main():
-    # Create the environment with settings from config.py.
+    # Create the environment with settings from config.py
     env = AntFarmEnv(grid_size=config.GRID_SIZE, max_steps=config.MAX_STEPS, fixed_goal=config.FIXED_GOAL)
 
-    # Load an existing Q-table if available.
+    # Load an existing Q-table if available
     Q = load_q_table(config.Q_TABLE_FILE)
 
-    # Train the agent using Q-learning.
+    # Train the agent using Q-learning while showing a demo every 500 episodes
     Q, rewards, steps = q_learning(
         env,
         Q=Q,
@@ -24,36 +20,27 @@ def main():
         gamma=config.GAMMA,
         epsilon=config.EPSILON,
         epsilon_decay=config.EPSILON_DECAY,
-        min_epsilon=config.MIN_EPSILON
+        min_epsilon=config.MIN_EPSILON,
+        demo_interval=500  # Show demo every 500 episodes
     )
 
-    # Save the updated Q-table.
+    # Save the updated Q-table
     save_q_table(Q, config.Q_TABLE_FILE)
 
-    # Plot training results.
+    # Plot training results
     plot_training_results(rewards, steps)
 
-    # Run a demonstration episode with rendering.
+    # Run a final demonstration episode with rendering after training completes
     state, _ = env.reset()
     done = False
-    for episode in range(config.NUM_EPISODES):
-        state, _ = env.reset()
-        done = False
-        while not done:
-            env.render(episode=episode)  # Render episode number
-            state_key = tuple(state)
-
-            if state_key not in Q:
-                action = env.action_space.sample()
-            else:
-                action = np.argmax(Q[state_key])
-
-            state, reward, done, truncated, info = env.step(action)
-
-            if done:  # If the agent reaches the goal, break early and reset
-                break
-
-            pygame.time.wait(1)  # Small delay between steps
+    while not done:
+        env.render()
+        state_key = tuple(state)
+        if state_key not in Q:
+            action = env.action_space.sample()
+        else:
+            action = np.argmax(Q[state_key])
+        state, reward, done, truncated, info = env.step(action)
 
     env.close()
 
