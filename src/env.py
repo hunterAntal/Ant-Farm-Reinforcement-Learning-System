@@ -142,16 +142,28 @@ class AntFarmEnv(gym.Env):
 
         # If the intended new position is inside the obstacle, block the movement
         # and apply a penalty.
+        reward = -1  # Penalize every step to encourage efficiency
+
         if self._is_in_obstacle(new_pos):
-            reward = -5  # Penalty for hitting the obstacle
-            new_pos = self.agent_pos.copy()  # Remain in place
+            reward -= 5  # Additional penalty for hitting an obstacle
+            new_pos = self.agent_pos.copy()  # Stay in place
         else:
-            # Otherwise update the agent’s position and compute the reward normally.
             self.agent_pos = new_pos
             new_distance = self._manhattan_distance(self.agent_pos, self.goal_pos)
-            reward = 10 - new_distance
+
             if new_distance == 0:
-                reward += 50  # Bonus for reaching the goal
+                reward += config.REACHED_GOAL_BONUS  # Big reward for success
+            else:
+                reward += (10 - new_distance)  # Smaller rewards for getting closer
+
+        self.episode_reward += reward
+        done = self.steps >= self.max_steps
+
+        # If goal is reached, reset the environment.
+        if np.array_equal(self.agent_pos, self.goal_pos):
+            return self.reset()[0], reward, True, False, {}
+
+        return np.array([*self.agent_pos, *self.goal_pos], dtype=np.int32), reward, done, False, {}
 
         self.episode_reward += reward
 

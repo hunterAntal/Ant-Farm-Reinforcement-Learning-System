@@ -18,12 +18,13 @@ OBSTACLE_HEIGHT = 4 # Adjust the obstacle height
 # -----------------------------
 # Q-learning Hyperparameters
 # -----------------------------
-NUM_EPISODES = 5000  # Total number of training episodes
+NUM_EPISODES = 40000  # Total number of training episodes
 ALPHA = 0.1  # Learning rate: How much new experiences overwrite old ones
 GAMMA = 0.99  # Discount factor: Higher values prioritize future rewards
 EPSILON = 1.0  # Initial exploration rate (100% random moves at the start)
 EPSILON_DECAY = 0.999  # Decay rate: Slowly decreases exploration over time
 MIN_EPSILON = 0.01  # Ensures a minimum exploration rate (1%)
+REACHED_GOAL_BONUS = 500 # When the ant reaches the goal reward it (ex. 50)
 
 # -----------------------------
 # Q-table Persistence
