@@ -43,7 +43,7 @@ def q_learning(env, Q, num_episodes, alpha, gamma, epsilon, epsilon_decay, min_e
 
         # Every demo_interval episodes, run a demonstration
         if episode % demo_interval == 0:
-            print(f"--- Demonstration at Episode {episode} ---")
+            print(f"--- Demonstration at Episode ---")
             demo(env, Q, episode)
 
     return Q, rewards, steps
