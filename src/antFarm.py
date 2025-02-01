@@ -1,3 +1,4 @@
+import os
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
@@ -139,16 +140,17 @@ class AntFarmEnv(gym.Env):
 
 
 # ------------------------------------------------------------------------------
-# Q-Learning Implementation
+# Q-Learning Implementation with Q-table Persistence
 # ------------------------------------------------------------------------------
 
-def q_learning(env, num_episodes=5000, alpha=0.1, gamma=0.99,
+def q_learning(env, Q=None, num_episodes=5000, alpha=0.1, gamma=0.99,
                epsilon=1.0, epsilon_decay=0.999, min_epsilon=0.01):
     """
-    Basic Q-Learning algorithm.
+    Basic Q-Learning algorithm with an option to continue from an existing Q-table.
 
     Parameters:
       - env: The environment instance.
+      - Q: An optional dictionary containing a previously learned Q-table.
       - num_episodes: How many episodes to train for.
       - alpha: Learning rate.
       - gamma: Discount factor.
@@ -157,11 +159,13 @@ def q_learning(env, num_episodes=5000, alpha=0.1, gamma=0.99,
       - min_epsilon: Minimum exploration rate.
 
     Returns:
-      - Q: The learned Q-table.
+      - Q: The updated Q-table.
       - episode_rewards: List of total rewards per episode.
       - episode_steps: List of steps taken per episode.
     """
-    Q = {}  # Q-table as a dictionary: keys are state tuples, values are Q-value arrays.
+    # If no Q-table was provided, initialize an empty dictionary.
+    if Q is None:
+        Q = {}
     episode_rewards = []
     episode_steps = []
 
@@ -208,16 +212,28 @@ def q_learning(env, num_episodes=5000, alpha=0.1, gamma=0.99,
 
 
 # ------------------------------------------------------------------------------
-# Main: Training and Demonstration
+# Main: Training and Demonstration with Q-table Persistence
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     # Create the environment.
-    env = AntFarmEnv(grid_size=50, max_steps=100)
+    env = AntFarmEnv(grid_size=10, max_steps=100)
 
-    # Train the agent using Q-Learning.
+    # File to save/load the Q-table.
+    q_table_file = "q_table.npy"
+
+    # Check if a saved Q-table exists. If so, load it.
+    if os.path.exists(q_table_file):
+        print("Loading existing Q-table from", q_table_file)
+        Q = np.load(q_table_file, allow_pickle=True).item()
+    else:
+        print("No existing Q-table found. Starting fresh.")
+        Q = {}
+
+    # Train the agent using Q-Learning, continuing from the loaded Q-table if available.
     Q, rewards, steps = q_learning(
         env,
+        Q=Q,
         num_episodes=5000,
         alpha=0.1,
         gamma=0.99,
@@ -225,6 +241,10 @@ if __name__ == '__main__':
         epsilon_decay=0.999,
         min_epsilon=0.01
     )
+
+    # Save the updated Q-table to a file for future runs.
+    np.save(q_table_file, Q)
+    print("Saved Q-table to", q_table_file)
 
     # Plot training results.
     plt.figure(figsize=(12, 5))
