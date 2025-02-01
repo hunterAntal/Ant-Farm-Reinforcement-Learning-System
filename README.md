@@ -1,31 +1,32 @@
-# Ant Farm Reinforcement Learning
+# Ant Farm Reinforcement Learning System
 
 ## Overview
-Ant Farm is a reinforcement learning environment where an agent ("ant") navigates a 2D grid to reach a fixed goal while learning an optimal path. The agent improves through Q-learning and retains knowledge across multiple runs using Q-table persistence.
+Ant Farm is a **reinforcement learning (RL) environment** where an agent ("ant") learns to navigate a **2D grid** while avoiding obstacles and reaching a fixed goal. The agent improves over time using **Q-learning**, and the learned data is persisted across runs.
 
 ## Features
-- **Grid-based environment** with a fixed goal position
-- **Q-learning algorithm** for training the agent
-- **Pygame visualization** to render the learning process
-- **Q-table persistence** to retain learned data across runs
-- **Configurable parameters** via `config.py`
+- **Fixed Goal Position**: The goal remains in the same location across episodes.
+- **Q-learning Algorithm**: Reinforcement learning with epsilon-greedy exploration.
+- **Obstacle Avoidance**: The environment includes obstacles that affect movement.
+- **Pyglet-Based Rendering**: Real-time visualization with episode and step counters.
+- **Q-table Persistence**: Saves and loads trained Q-values to avoid restarting learning.
+- **Training Statistics**: Generates plots for training progress.
 
 ## Project Structure
 ```
 .
-├── antFarm.py       # Legacy environment file (use env.py instead)
-├── config.py        # Configuration settings (grid size, learning rates, etc.)
-├── env.py           # Custom Gymnasium-based environment
+├── config.py        # Configuration settings (grid size, obstacles, learning rates, etc.)
+├── env.py           # Custom Gymnasium-based environment with obstacles
 ├── main.py          # Main script to train and run the agent
 ├── q_learning.py    # Q-learning implementation
 ├── utils.py         # Utility functions (saving/loading Q-table, plotting results)
+├── q_table.npy      # Saved Q-table (persists learned policy)
 ```
 
 ## Installation
 ### Requirements
 Ensure you have Python 3.8+ and install the necessary dependencies:
 ```bash
-pip install gymnasium pygame numpy matplotlib
+pip install gymnasium numpy matplotlib pyglet
 ```
 
 ## Running the Simulation
@@ -38,8 +39,12 @@ python main.py
 Modify `config.py` to change settings such as:
 ```python
 GRID_SIZE = 10
-MAX_STEPS = 100
-FIXED_GOAL = (5, 5)
+MAX_STEPS = 25
+FIXED_GOAL = (1, 1)
+OBSTACLE_X = 3
+OBSTACLE_Y = 3
+OBSTACLE_WIDTH = 7
+OBSTACLE_HEIGHT = 4
 NUM_EPISODES = 5000
 ALPHA = 0.1
 GAMMA = 0.99
@@ -52,6 +57,7 @@ MIN_EPSILON = 0.01
 After training, results are plotted to visualize performance:
 - **Total reward per episode**
 - **Steps per episode**
+- **Histogram and box plot of steps**
 
 The Q-table is saved automatically to `q_table.npy`.
 
