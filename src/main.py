@@ -36,16 +36,20 @@ def main():
     # Run a demonstration episode with rendering.
     state, _ = env.reset()
     done = False
-    while not done:
-        env.render()
-        state_key = tuple(state)
-        # Choose action using the learned policy (or random if unseen).
-        if state_key not in Q:
-            action = env.action_space.sample()
-        else:
-            action = np.argmax(Q[state_key])
-        state, reward, done, truncated, info = env.step(action)
-        pygame.time.wait(200)  # Wait 200ms between steps
+    for episode in range(config.NUM_EPISODES):
+        state, _ = env.reset()
+        done = False
+        while not done:
+            env.render(episode=episode)  # Pass episode number to render function
+            state_key = tuple(state)
+
+            if state_key not in Q:
+                action = env.action_space.sample()
+            else:
+                action = np.argmax(Q[state_key])
+
+            state, reward, done, truncated, info = env.step(action)
+            pygame.time.wait(2)
 
     env.close()
 

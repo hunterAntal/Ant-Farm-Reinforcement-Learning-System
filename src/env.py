@@ -95,7 +95,7 @@ class AntFarmEnv(gym.Env):
     def _manhattan_distance(self, pos1, pos2):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
-    def render(self, mode='human'):
+    def render(self, mode='human', episode=0):
         if self.screen is None:
             pygame.init()
             self.screen = pygame.display.set_mode((self.window_size, self.window_size))
@@ -103,21 +103,27 @@ class AntFarmEnv(gym.Env):
             self.clock = pygame.time.Clock()
 
         self.screen.fill((255, 255, 255))
-        # Draw grid lines.
+
+        # Draw grid lines
         for x in range(0, self.window_size, self.cell_size):
             pygame.draw.line(self.screen, (200, 200, 200), (x, 0), (x, self.window_size))
         for y in range(0, self.window_size, self.cell_size):
             pygame.draw.line(self.screen, (200, 200, 200), (0, y), (self.window_size, y))
 
-        # Draw the goal (red square).
-        goal_rect = pygame.Rect(self.goal_pos[0] * self.cell_size, self.goal_pos[1] * self.cell_size,
-                                self.cell_size, self.cell_size)
+        # Draw the goal as a red square
+        goal_rect = pygame.Rect(self.goal_pos[0] * self.cell_size, self.goal_pos[1] * self.cell_size, self.cell_size,
+                                self.cell_size)
         pygame.draw.rect(self.screen, (255, 0, 0), goal_rect)
 
-        # Draw the agent (blue circle).
+        # Draw the agent as a blue circle
         agent_center = (self.agent_pos[0] * self.cell_size + self.cell_size // 2,
                         self.agent_pos[1] * self.cell_size + self.cell_size // 2)
         pygame.draw.circle(self.screen, (0, 0, 255), agent_center, self.cell_size // 3)
+
+        # Render Episode Counter
+        font = pygame.font.Font(None, 36)  # Use default font, size 36
+        episode_text = font.render(f"Episode: {episode}", True, (0, 0, 0))  # Black text
+        self.screen.blit(episode_text, (10, 10))  # Position at top-left corner
 
         pygame.display.flip()
         self.clock.tick(10)
