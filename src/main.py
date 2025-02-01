@@ -40,7 +40,7 @@ def main():
         state, _ = env.reset()
         done = False
         while not done:
-            env.render(episode=episode)  # Pass episode number to render function
+            env.render(episode=episode)  # Render episode number
             state_key = tuple(state)
 
             if state_key not in Q:
@@ -49,7 +49,11 @@ def main():
                 action = np.argmax(Q[state_key])
 
             state, reward, done, truncated, info = env.step(action)
-            pygame.time.wait(2)
+
+            if done:  # If the agent reaches the goal, break early and reset
+                break
+
+            pygame.time.wait(2)  # Small delay between steps
 
     env.close()
 
