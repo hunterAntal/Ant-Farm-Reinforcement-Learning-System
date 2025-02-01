@@ -213,7 +213,7 @@ def q_learning(env, num_episodes=5000, alpha=0.1, gamma=0.99,
 
 if __name__ == '__main__':
     # Create the environment.
-    env = AntFarmEnv(grid_size=10, max_steps=100)
+    env = AntFarmEnv(grid_size=50, max_steps=100)
 
     # Train the agent using Q-Learning.
     Q, rewards, steps = q_learning(
