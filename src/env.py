@@ -67,7 +67,7 @@ class AntFarmEnv(gym.Env):
     def step(self, action):
         self.steps += 1
 
-        # Update agent's position.
+        # Move agent based on action
         if action == 0:  # Up
             self.agent_pos[1] = max(self.agent_pos[1] - 1, 0)
         elif action == 1:  # Down
@@ -80,17 +80,15 @@ class AntFarmEnv(gym.Env):
         new_distance = self._manhattan_distance(self.agent_pos, self.goal_pos)
         reward = 10 - new_distance
 
-        done = False
+        # Check if the goal is reached
         if new_distance == 0:
-            reward += 50  # Bonus for reaching the goal.
-            done = True
-        if self.steps >= self.max_steps:
-            done = True
+            reward += 50  # Bonus for reaching the goal
+            return self.reset()[0], reward, True, False, {}  # Immediately reset
 
-        obs = np.array([self.agent_pos[0], self.agent_pos[1],
-                        self.goal_pos[0], self.goal_pos[1]], dtype=np.int32)
-        info = {}
-        return obs, reward, done, False, info
+        # End episode if max steps are reached
+        done = self.steps >= self.max_steps
+        obs = np.array([self.agent_pos[0], self.agent_pos[1], self.goal_pos[0], self.goal_pos[1]], dtype=np.int32)
+        return obs, reward, done, False, {}
 
     def _manhattan_distance(self, pos1, pos2):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
