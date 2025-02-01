@@ -24,7 +24,7 @@ class AntFarmEnv(gym.Env):
         # --- Define a simple obstacle ---
         # In this example, the obstacle is a rectangle starting at (8,8)
         # with a width and height of 4 grid cells.
-        self.obstacle = {"x": config.OBSTACLE_X, "y": config.OBSTACLE_Y, "width": 4, "height": 4}
+        self.obstacle = {"x": config.OBSTACLE_X, "y": config.OBSTACLE_Y, "width": config.OBSTACLE_WIDTH, "height": config.OBSTACLE_HEIGHT}
 
         # Initialize the environment state
         self.reset()

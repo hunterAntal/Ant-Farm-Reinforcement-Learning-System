@@ -12,6 +12,8 @@ FIXED_GOAL = (1, 1)  # Goal remains fixed at coordinate (5,5)
 
 OBSTACLE_X = 3  # Adjust the obstacle x
 OBSTACLE_Y = 3  # Adjust the obstacle y
+OBSTACLE_WIDTH = 7 # Adjust the obstacle width
+OBSTACLE_HEIGHT = 4 # Adjust the obstacle height
 
 # -----------------------------
 # Q-learning Hyperparameters
