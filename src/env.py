@@ -3,7 +3,6 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-
 class AntFarmEnv(gym.Env):
     def __init__(self, grid_size=10, max_steps=100, fixed_goal=None):
         super(AntFarmEnv, self).__init__()
@@ -30,21 +29,21 @@ class AntFarmEnv(gym.Env):
         self.goal_shape = pyglet.shapes.Rectangle(
             self.goal_pos[0] * self.cell_size,
             self.goal_pos[1] * self.cell_size,
-            self.cell_size, self.cell_size, color=(255, 0, 0), batch=self.batch)
+            self.cell_size, self.cell_size, color=(255, 0, 0), batch=self.batch
+        )
 
         self.agent_shape = pyglet.shapes.Circle(
             self.agent_pos[0] * self.cell_size + self.cell_size // 2,
             self.agent_pos[1] * self.cell_size + self.cell_size // 2,
-            self.cell_size // 3, color=(0, 0, 255), batch=self.batch)
+            self.cell_size // 3, color=(0, 0, 255), batch=self.batch
+        )
 
         # Grid Lines
         self.grid_lines = []
         for x in range(0, self.window_size, self.cell_size):
-            self.grid_lines.append(
-                pyglet.shapes.Line(x, 0, x, self.window_size, color=(200, 200, 200), batch=self.batch))
+            self.grid_lines.append(pyglet.shapes.Line(x, 0, x, self.window_size, color=(200, 200, 200), batch=self.batch))
         for y in range(0, self.window_size, self.cell_size):
-            self.grid_lines.append(
-                pyglet.shapes.Line(0, y, self.window_size, y, color=(200, 200, 200), batch=self.batch))
+            self.grid_lines.append(pyglet.shapes.Line(0, y, self.window_size, y, color=(200, 200, 200), batch=self.batch))
 
         # Episode Counter Label (top right of the window)
         self.episode_label = pyglet.text.Label(
@@ -70,6 +69,18 @@ class AntFarmEnv(gym.Env):
             color=(255, 255, 255, 255)
         )
 
+        # Rewards Counter Label (placed just below the step counter)
+        self.reward_label = pyglet.text.Label(
+            "Reward: 0",
+            font_name='Arial',
+            font_size=14,
+            x=self.window_size - 10,
+            y=self.window_size - 50,  # 20 pixels below the step label
+            anchor_x='right',
+            anchor_y='top',
+            color=(255, 255, 255, 255)
+        )
+
     def reset(self, seed=None, options=None):
         # Randomly place the agent; avoid starting on the goal
         self.agent_pos = np.array([np.random.randint(self.grid_size), np.random.randint(self.grid_size)])
@@ -78,6 +89,7 @@ class AntFarmEnv(gym.Env):
 
         self.goal_pos = self.fixed_goal.copy()
         self.steps = 0
+        self.episode_reward = 0  # Initialize the cumulative reward for the episode
         return np.array([*self.agent_pos, *self.goal_pos], dtype=np.int32), {}
 
     def step(self, action):
@@ -96,7 +108,11 @@ class AntFarmEnv(gym.Env):
         reward = 10 - new_distance
 
         if new_distance == 0:
-            reward += 50  # Bonus for reaching goal
+            reward += 50  # Bonus for reaching the goal
+
+        self.episode_reward += reward  # Update the cumulative reward
+
+        if new_distance == 0:
             return self.reset()[0], reward, True, False, {}
 
         done = self.steps >= self.max_steps
@@ -110,17 +126,19 @@ class AntFarmEnv(gym.Env):
         self.episode_label.text = f"Episode: {episode}"
 
     def render(self):
-        # Process window events, clear, update positions, and flip the buffer
+        # Process window events, clear the window, update positions, and draw the batch
         self.window.dispatch_events()
         self.window.clear()
         self.agent_shape.x = self.agent_pos[0] * self.cell_size + self.cell_size // 2
         self.agent_shape.y = self.agent_pos[1] * self.cell_size + self.cell_size // 2
         self.batch.draw()
-        self.episode_label.draw()  # Draw the episode counter label
 
-        # Update and draw the step counter label using the current step count
+        # Draw the counters
+        self.episode_label.draw()
         self.step_label.text = f"Step: {self.steps}"
         self.step_label.draw()
+        self.reward_label.text = f"Reward: {self.episode_reward}"
+        self.reward_label.draw()
 
         self.window.flip()
 
