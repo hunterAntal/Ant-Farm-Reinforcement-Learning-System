@@ -3,6 +3,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
+
 class AntFarmEnv(gym.Env):
     def __init__(self, grid_size=10, max_steps=100, fixed_goal=None):
         super(AntFarmEnv, self).__init__()
@@ -39,9 +40,11 @@ class AntFarmEnv(gym.Env):
         # Grid Lines
         self.grid_lines = []
         for x in range(0, self.window_size, self.cell_size):
-            self.grid_lines.append(pyglet.shapes.Line(x, 0, x, self.window_size, color=(200, 200, 200), batch=self.batch))
+            self.grid_lines.append(
+                pyglet.shapes.Line(x, 0, x, self.window_size, color=(200, 200, 200), batch=self.batch))
         for y in range(0, self.window_size, self.cell_size):
-            self.grid_lines.append(pyglet.shapes.Line(0, y, self.window_size, y, color=(200, 200, 200), batch=self.batch))
+            self.grid_lines.append(
+                pyglet.shapes.Line(0, y, self.window_size, y, color=(200, 200, 200), batch=self.batch))
 
         # Episode Counter Label (top right of the window)
         self.episode_label = pyglet.text.Label(
@@ -50,6 +53,18 @@ class AntFarmEnv(gym.Env):
             font_size=14,
             x=self.window_size - 10,
             y=self.window_size - 10,
+            anchor_x='right',
+            anchor_y='top',
+            color=(255, 255, 255, 255)
+        )
+
+        # Step Counter Label (placed just below the episode counter)
+        self.step_label = pyglet.text.Label(
+            "Step: 0",
+            font_name='Arial',
+            font_size=14,
+            x=self.window_size - 10,
+            y=self.window_size - 30,  # 20 pixels below the episode label
             anchor_x='right',
             anchor_y='top',
             color=(255, 255, 255, 255)
@@ -102,6 +117,11 @@ class AntFarmEnv(gym.Env):
         self.agent_shape.y = self.agent_pos[1] * self.cell_size + self.cell_size // 2
         self.batch.draw()
         self.episode_label.draw()  # Draw the episode counter label
+
+        # Update and draw the step counter label using the current step count
+        self.step_label.text = f"Step: {self.steps}"
+        self.step_label.draw()
+
         self.window.flip()
 
     def close(self):
