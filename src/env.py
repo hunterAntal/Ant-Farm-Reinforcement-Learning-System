@@ -94,6 +94,8 @@ class AntFarmEnv(gym.Env):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
     def render(self, mode='human', episode=0):
+        if episode % 500 != 0:
+            return  # Skip rendering except for every 500th episode
         if self.screen is None:
             pygame.init()
             self.screen = pygame.display.set_mode((self.window_size, self.window_size))

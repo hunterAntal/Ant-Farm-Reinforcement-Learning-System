@@ -53,7 +53,7 @@ def main():
             if done:  # If the agent reaches the goal, break early and reset
                 break
 
-            pygame.time.wait(2)  # Small delay between steps
+            pygame.time.wait(1)  # Small delay between steps
 
     env.close()
 

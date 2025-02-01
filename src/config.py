@@ -6,7 +6,7 @@
 # -----------------------------
 # Environment Settings
 # -----------------------------
-GRID_SIZE = 10   # Defines the grid size (10x10 environment)
+GRID_SIZE = 10  # Defines the grid size (10x10 environment)
 MAX_STEPS = 100  # Maximum number of steps per episode
 FIXED_GOAL = (1, 1)  # Goal remains fixed at coordinate (5,5)
 
