@@ -53,7 +53,7 @@ MAZE_LAYOUT = [
 # -----------------------------
 # Q-learning Hyperparameters
 # -----------------------------
-NUM_EPISODES = 50000  # Total number of training episodes
+NUM_EPISODES = 500000  # Total number of training episodes
 ALPHA = 0.1          # Learning rate: How much new experiences overwrite old ones
 GAMMA = 0.99         # Discount factor: Higher values prioritize future rewards
 EPSILON = 1.0        # Initial exploration rate (100% random moves at the start)
