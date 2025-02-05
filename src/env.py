@@ -151,7 +151,7 @@ class AntFarmEnv(gym.Env):
             new_distance = self._manhattan_distance(self.agent_pos, self.goal_pos)
             reward = 10 - new_distance
             if new_distance == 0:
-                reward += 50  # Bonus for reaching the goal
+                reward += config.REWARD_VALUE  # Bonus for reaching the goal
 
         self.episode_reward += reward
 

@@ -1,6 +1,8 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+
+import config
 from utils import plot_histogram_and_boxplot, plot_training_results
 
 
@@ -49,7 +51,7 @@ def update_q_value(Q, state_key, action, reward, next_state_key, alpha, gamma, e
     Q[state_key][action] += alpha * (reward + gamma * np.max(Q[next_state_key]) - Q[state_key][action])
 
 
-def q_learning(env, Q, num_episodes, alpha, gamma, epsilon, epsilon_decay, min_epsilon, demo_interval=500):
+def q_learning(env, Q, num_episodes, alpha, gamma, epsilon, epsilon_decay, min_epsilon, demo_interval=config.EPISODE_INTERVAL):
     """
     Train an agent using Q-learning.
 

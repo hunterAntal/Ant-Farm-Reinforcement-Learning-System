@@ -21,7 +21,7 @@ def main():
         epsilon=config.EPSILON,
         epsilon_decay=config.EPSILON_DECAY,
         min_epsilon=config.MIN_EPSILON,
-        demo_interval=500  # Show demo every 500 episodes
+        demo_interval=config.EPISODE_INTERVAL  # Show demo every 500 episodes
     )
 
     # Save the updated Q-table
