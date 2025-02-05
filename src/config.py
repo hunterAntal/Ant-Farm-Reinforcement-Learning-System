@@ -6,30 +6,39 @@
 # -----------------------------
 # Environment Settings
 # -----------------------------
-GRID_SIZE = 40  # Defines the grid size (10x10 environment)
+GRID_SIZE = 10  # Maze dimensions (10x10)
 MAX_STEPS = 100  # Maximum number of steps per episode
-FIXED_GOAL = (1, 1)  # Goal remains fixed at coordinate (5,5)
+FIXED_GOAL = (1, 1)  # Goal remains fixed at coordinate (1,1)
 
 EPISODE_INTERVAL = 50000
 
-OBSTACLE_X = 3  # Adjust the obstacle x
-OBSTACLE_Y = 3  # Adjust the obstacle y
-OBSTACLE_WIDTH = 7 # Adjust the obstacle width
-OBSTACLE_HEIGHT = 4 # Adjust the obstacle height
+# Replace the old obstacle config with a full maze layout.
+# 0 = Open path, 1 = Wall
+MAZE_LAYOUT = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 1, 1, 0, 1],
+    [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+]
 
 # -----------------------------
 # Q-learning Hyperparameters
 # -----------------------------
 NUM_EPISODES = 200000  # Total number of training episodes
-ALPHA = 0.1  # Learning rate: How much new experiences overwrite old ones
-GAMMA = 0.99  # Discount factor: Higher values prioritize future rewards
-EPSILON = 1.0  # Initial exploration rate (100% random moves at the start)
+ALPHA = 0.1          # Learning rate: How much new experiences overwrite old ones
+GAMMA = 0.99         # Discount factor: Higher values prioritize future rewards
+EPSILON = 1.0        # Initial exploration rate (100% random moves at the start)
 EPSILON_DECAY = 0.999  # Decay rate: Slowly decreases exploration over time
-MIN_EPSILON = 0.01  # Ensures a minimum exploration rate (1%)
+MIN_EPSILON = 0.01   # Ensures a minimum exploration rate (1%)
 REWARD_VALUE = 1000
 
 # -----------------------------
 # Q-table Persistence
 # -----------------------------
 Q_TABLE_FILE = "q_table.npy"  # File to store/load Q-table to retain learning across runs
-
