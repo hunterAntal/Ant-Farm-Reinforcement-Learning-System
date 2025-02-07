@@ -2,30 +2,23 @@ import numpy as np
 from env import AntFarmEnv
 from q_learning import q_learning
 from utils import save_q_table, load_q_table, plot_training_results
-import config
+import config_loader
 
 def main():
-    # Create the environment with settings from config.py
-    env = AntFarmEnv(grid_size=config.GRID_SIZE, max_steps=config.MAX_STEPS, fixed_goal=config.FIXED_GOAL)
+    # Load configuration settings dynamically
+    config = config_loader.load_config()
+
+    # Create the environment (no extra parameters needed)
+    env = AntFarmEnv()
 
     # Load an existing Q-table if available
-    Q = load_q_table(config.Q_TABLE_FILE)
+    Q = load_q_table(config["Q_TABLE_FILE"])
 
     # Train the agent using Q-learning while showing a demo every 500 episodes
-    Q, rewards, steps = q_learning(
-        env,
-        Q=Q,
-        num_episodes=config.NUM_EPISODES,
-        alpha=config.ALPHA,
-        gamma=config.GAMMA,
-        epsilon=config.EPSILON,
-        epsilon_decay=config.EPSILON_DECAY,
-        min_epsilon=config.MIN_EPSILON,
-        demo_interval=500  # Show demo every 500 episodes
-    )
+    Q, rewards, steps = q_learning(env, Q, demo_interval=500)
 
     # Save the updated Q-table
-    save_q_table(Q, config.Q_TABLE_FILE)
+    save_q_table(Q, config["Q_TABLE_FILE"])
 
     # Plot training results
     plot_training_results(rewards, steps)
